@@ -31,6 +31,32 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+ALLOWED_USER_IDS: set[int] = set()
+_raw_ids = os.environ.get("ALLOWED_USER_IDS", "")
+for _id in _raw_ids.split(","):
+    _id = _id.strip()
+    if _id.isdigit():
+        ALLOWED_USER_IDS.add(int(_id))
+
+
+class AllowedUserFilter(filters.BaseFilter):
+    """Filter that only passes updates from allowed Telegram user IDs."""
+
+    def filter(self, message) -> bool:
+        if not ALLOWED_USER_IDS:
+            return True  # no restriction if env var is empty
+        if message.from_user and message.from_user.id in ALLOWED_USER_IDS:
+            return True
+        logger.warning(
+            "Unauthorized access from user %s (@%s)",
+            message.from_user.id if message.from_user else "unknown",
+            message.from_user.username if message.from_user else "unknown",
+        )
+        return False
+
+
+allowed_user = AllowedUserFilter()
+
 ALGO_MAP = {0: "SHA1", 1: "SHA1", 2: "SHA256", 3: "SHA512", 4: "MD5"}
 DIGITS_MAP = {0: "6", 1: "6", 2: "8"}
 TYPE_MAP = {0: "totp", 1: "hotp", 2: "totp"}
@@ -222,9 +248,9 @@ def main() -> None:
         raise SystemExit("Set TELEGRAM_BOT_TOKEN environment variable")
 
     app = ApplicationBuilder().token(token).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    app.add_handler(CommandHandler("start", start, filters=allowed_user))
+    app.add_handler(MessageHandler(filters.PHOTO & allowed_user, handle_photo))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & allowed_user, handle_text))
     app.add_error_handler(error_handler)
 
     logger.info("Bot started")
