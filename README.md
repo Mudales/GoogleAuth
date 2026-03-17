@@ -37,6 +37,7 @@ A Telegram bot that decodes **Google Authenticator export QR codes** and `otpaut
 
    ```env
    TELEGRAM_BOT_TOKEN=your_token_here
+   ALLOWED_USER_IDS=123456789,987654321
    ```
 
 3. **Build and run**
@@ -82,3 +83,4 @@ A Telegram bot that decodes **Google Authenticator export QR codes** and `otpaut
 | Variable | Description |
 |---|---|
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
+| `ALLOWED_USER_IDS` | Comma-separated Telegram user IDs allowed to use the bot. If empty, the bot is open to everyone. |
