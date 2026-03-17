@@ -14,6 +14,7 @@ A Telegram bot that decodes **Google Authenticator export QR codes** and `otpaut
   - A freshly generated QR code image
   - Copyable `otpauth://` URI
 - Supports TOTP and HOTP accounts
+- 🔒 Access control — restrict usage to specific Telegram user IDs via `.env`
 
 ---
 
